@@ -44,7 +44,7 @@
 1. Rename `config.json.example` to `config.json`
 2. Edit the required value in `config.json`. You can get the apikey at [`LoL Human Rest API`](https://api.lolhuman.xyz/).
 
-```json
+```js
 {
     "botName": "LoL Human Bot", // name of bot
     "ownerName": "LoL Human", // owner name, you should add your name
