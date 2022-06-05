@@ -1,0 +1,8 @@
+*-session.json
+package-lock.json
+fitur.txt
+.prettierrc
+.vscode
+node_modules
+store/baileys_store.json
+config.json
