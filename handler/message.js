@@ -658,7 +658,6 @@ module.exports = async (sock, msg) => {
                 reply(`Kirim gambar dengan caption ${prefix}sticker atau tag gambar yang sudah dikirim`)
             }
             break
-
         case 'sticker':
         case 's':
             var mediaType = type
@@ -711,6 +710,76 @@ module.exports = async (sock, msg) => {
                     .toFormat('webp')
                     .save(`./temp/stickers/${sender}.webp`)
             }
+            break
+
+        // Stalk
+        case 'stalkig':
+            if (args.length == 0) return reply(`Example: ${prefix + command} jessnolimit`)
+            axios.get(`https://api.lolhuman.xyz/api/stalkig/${args[0]}?apikey=${apikey}`).then(({ data }) => {
+                var caption = `Username : ${data.result.username}\n`
+                caption += `Full Name : ${data.result.fullname}\n`
+                caption += `Posts : ${data.result.posts}\n`
+                caption += `Followers : ${data.result.followers}\n`
+                caption += `Following : ${data.result.following}\n`
+                caption += `Bio : ${data.result.bio}`
+                sock.sendMessage(from, { image: { url: data.result.photo_profile }, caption })
+            })
+            break
+        case 'stalkgithub':
+            if (args.length == 0) return reply(`Example: ${prefix + command} LoL-Human`)
+            axios.get(`https://api.lolhuman.xyz/api/github/${args[0]}?apikey=${apikey}`).then(({ data }) => {
+                var caption = `Name : ${data.result.name}\n`
+                caption += `Link : ${data.result.url}\n`
+                caption += `Public Repo : ${data.result.public_repos}\n`
+                caption += `Public Gists : ${data.result.public_gists}\n`
+                caption += `Followers : ${data.result.followers}\n`
+                caption += `Following : ${data.result.following}\n`
+                caption += `Bio : ${data.result.bio}`
+                sock.sendMessage(from, { image: { url: data.result.avatar }, caption })
+            })
+            break
+        case 'stalktwitter':
+            if (args.length == 0) return reply(`Example: ${prefix + command} jokowi`)
+            axios.get(`https://api.lolhuman.xyz/api/twitter/${args[0]}?apikey=${apikey}`).then(({ data }) => {
+                var caption = `Username : ${data.result.screen_name}\n`
+                caption += `Name : ${data.result.name}\n`
+                caption += `Tweet : ${data.result.tweet}\n`
+                caption += `Joined : ${data.result.joined}\n`
+                caption += `Followers : ${data.result.followers}\n`
+                caption += `Following : ${data.result.following}\n`
+                caption += `Like : ${data.result.like}\n`
+                caption += `Description : ${data.result.description}`
+                sock.sendMessage(from, { image: { url: data.result.profile_picture }, caption })
+            })
+            break
+        case 'stalktiktok':
+            if (args.length == 0) return reply(`Example: ${prefix + command} bulansutena`)
+            axios.get(`https://api.lolhuman.xyz/api/stalktiktok/${args[0]}?apikey=${apikey}`).then(({ data }) => {
+                var caption = `Username : ${data.result.username}\n`
+                caption += `Nickname : ${data.result.nickname}\n`
+                caption += `Followers : ${data.result.followers}\n`
+                caption += `Followings : ${data.result.followings}\n`
+                caption += `Likes : ${data.result.likes}\n`
+                caption += `Video : ${data.result.video}\n`
+                caption += `Bio : ${data.result.bio}\n`
+                sock.sendMessage(from, { image: { url: data.result.user_picture }, caption })
+            })
+            break
+
+        // Other
+        case 'ssweb':
+            if (args.length == 0) return reply(`Example: ${prefix + command} https://api.lolhuman.xyz`)
+            sock.sendMessage(from, { image: { url: `https://api.lolhuman.xyz/api/ssweb?apikey=${apikey}&url=${args[0]}` } })
+            break
+        case 'ssweb2':
+            if (args.length == 0) return reply(`Example: ${prefix + command} https://api.lolhuman.xyz`)
+            sock.sendMessage(from, { image: { url: `https://api.lolhuman.xyz/api/sswebfull?apikey=${apikey}&url=${args[0]}` } })
+            break
+        case 'shortlink':
+            if (args.length == 0) return reply(`Example: ${prefix + command} https://api.lolhuman.xyz`)
+            axios.get(`https://api.lolhuman.xyz/api/ouoshortlink?apikey=${apikey}&url=${args[0]}`).then(({ data }) => {
+                reply(data.result)
+            })
             break
 
         // Random Image //
