@@ -3,7 +3,7 @@
  * @param { string } prefix
  */
 exports.help = (prefix) => {
-    return ```${prefix}owner
+    return `${prefix}owner
 ${prefix}listsurah
 ${prefix}alquran
 ${prefix}alquranaudio
@@ -238,5 +238,5 @@ ${prefix}snow3d
 ${prefix}birthdayday
 ${prefix}goldplaybutton
 ${prefix}silverplaybutton
-${prefix}freefire```
+${prefix}freefire`
 }
