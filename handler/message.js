@@ -1,8 +1,11 @@
 const { WASocket, proto, getContentType, downloadContentFromMessage } = require('@adiwajshing/baileys')
 const axios = require('axios').default
+const { PassThrough } = require('stream')
 const moment = require('moment-timezone')
+const ffmpeg = require('fluent-ffmpeg')
 const FormData = require('form-data')
 const chalk = require('chalk')
+const fs = require('fs')
 
 const { help } = require('../utils/message')
 
@@ -653,6 +656,60 @@ module.exports = async (sock, msg) => {
                 )
             } else {
                 reply(`Kirim gambar dengan caption ${prefix}sticker atau tag gambar yang sudah dikirim`)
+            }
+            break
+
+        case 'sticker':
+        case 's':
+            var mediaType = type
+            if (isQuotedImage || isQuotedVideo) {
+                mediaType = quotedType
+                msg.message[mediaType] = msg.message.extendedTextMessage.contextInfo.quotedMessage[mediaType]
+            }
+            var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', ''))
+            let stickerStream = new PassThrough()
+            if (isImage || isQuotedImage) {
+                ffmpeg(stream)
+                    .on('start', function (cmd) {
+                        console.log(`Started : ${cmd}`)
+                    })
+                    .on('error', function (err) {
+                        console.log(`Error : ${err}`)
+                    })
+                    .on('end', function () {
+                        console.log('Finish')
+                    })
+                    .addOutputOptions([
+                        `-vcodec`,
+                        `libwebp`,
+                        `-vf`,
+                        `scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`,
+                    ])
+                    .toFormat('webp')
+                    .writeToStream(stickerStream)
+                sock.sendMessage(from, { sticker: { stream: stickerStream } })
+            } else if (isVideo || isQuotedVideo) {
+                ffmpeg(stream)
+                    .on('start', function (cmd) {
+                        console.log(`Started : ${cmd}`)
+                    })
+                    .on('error', function (err) {
+                        console.log(`Error : ${err}`)
+                    })
+                    .on('end', async () => {
+                        sock.sendMessage(from, { sticker: { url: `./temp/stickers/${sender}.webp` } }).then(() => {
+                            fs.unlinkSync(`./temp/stickers/${sender}.webp`)
+                            console.log('Finish')
+                        })
+                    })
+                    .addOutputOptions([
+                        `-vcodec`,
+                        `libwebp`,
+                        `-vf`,
+                        `scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`,
+                    ])
+                    .toFormat('webp')
+                    .save(`./temp/stickers/${sender}.webp`)
             }
             break
 
