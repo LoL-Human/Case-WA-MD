@@ -4,6 +4,8 @@ const moment = require('moment-timezone')
 const FormData = require('form-data')
 const chalk = require('chalk')
 
+const { help } = require('../utils/message')
+
 /**
  *
  * @param { string } text
@@ -108,6 +110,9 @@ module.exports = async (sock, msg) => {
                     contacts: [{ vcard }],
                 },
             })
+            break
+        case 'help':
+            reply(help(prefix))
             break
 
         // Islami //
