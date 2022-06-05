@@ -1,0 +1,24 @@
+{
+    "name": "wa-md",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+        "@adiwajshing/baileys": "^4.1.0",
+        "@adiwajshing/keyed-db": "^0.2.4",
+        "@hapi/boom": "^10.0.0",
+        "axios": "^0.27.2",
+        "chalk": "^4.1.0",
+        "form-data": "^4.0.0",
+        "moment-timezone": "^0.5.34",
+        "pino": "^8.0.0",
+        "qrcode-terminal": "^0.12.0"
+    },
+    "scripts": {
+        "debug": "nodemon --exec \"cls && node .\" --ignore \"*.json\" --ignore \"test/*.js\"",
+        "start": "node index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": ""
+}
