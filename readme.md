@@ -48,8 +48,8 @@
 {
     "botName": "LoL Human Bot", // name of bot
     "ownerName": "LoL Human", // owner name, you should add your name
-    "ownerNumber": ["62895418200111@s.whatsapp.net"], // owner name, you should add your number
-    "sessionName": "lolhuman", // will be blabla-session.json
+    "ownerNumber": ["62895418200111@s.whatsapp.net"], // owner number, you should add your number
+    "sessionName": "lolhuman", // will be lolhuman-session.json
     "apikey": "" // get apikey on my website (https://api.lolhuman.xyz/)
 }
 ```
