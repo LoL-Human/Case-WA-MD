@@ -93,6 +93,7 @@ module.exports = async (sock, msg) => {
         mediaType = quotedType
         msg.message[mediaType] = msg.message.extendedTextMessage.contextInfo.quotedMessage[mediaType]
     }
+    var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', '')).catch()
 
     if (!isGroup && !isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[ PRIVATE ]', 'aqua'), color(body.slice(0, 50), 'white'), 'from', color(senderNumber, 'yellow'))
     if (isGroup && !isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[  GROUP  ]', 'aqua'), color(body.slice(0, 50), 'white'), 'from', color(senderNumber, 'yellow'), 'in', color(groupName, 'yellow'))
@@ -467,7 +468,6 @@ module.exports = async (sock, msg) => {
             break
         case 'wait':
             if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
-            var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', ''))
             var form = new FormData()
             form.append('img', stream, 'tahu.jpg')
             axios.post(`https://api.lolhuman.xyz/api/wait?apikey=${apikey}`, form).then(({ data }) => {
@@ -591,6 +591,319 @@ module.exports = async (sock, msg) => {
                 }
                 reply(text)
             })
+            break
+
+        // Information //
+        case 'kbbi':
+            if (args.length == 0) return reply(`Example: ${prefix + command} kursi`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/kbbi?apikey=${apikey}&query=${full_args}`)
+            var text = `\`\`\`Kata : ${data.result[0].nama}\`\`\`\n`
+            text += `\`\`\`Kata Dasar : ${data.result[0].kata_dasar}\`\`\`\n`
+            text += `\`\`\`Pelafalan : ${data.result[0].pelafalan}\`\`\`\n`
+            text += `\`\`\`Bentuk Tidak Baku : ${data.result[0].bentuk_tidak_baku}\`\`\`\n\n`
+            for (var x of data.result) {
+                text += `\`\`\`Kode : ${x.makna[0].kelas[0].kode}\`\`\`\n`
+                text += `\`\`\`Kelas : ${x.makna[0].kelas[0].nama}\`\`\`\n`
+                text += `\`\`\`Artinya : \n${x.makna[0].kelas[0].deskripsi}\`\`\`\n\n`
+                text += `\`\`\`Makna Lain : \n${x.makna[0].submakna}\`\`\`\n `
+                text += `\`\`\`Contoh Kalimat : \n${x.makna[0].contoh}\`\`\`\n`
+            }
+            reply(text)
+            break
+        case 'brainly':
+            if (args.length == 0) return reply(`Example: ${prefix + command} siapakah sukarno`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/brainly?apikey=${apikey}&query=${full_args}`)
+            var text = 'Beberapa Pembahasan Dari Brainly :\n\n'
+            for (var x of data.result) {
+                text += `==============================\n`
+                text += `\`\`\`Pertanyaan :\`\`\`\n${x.question.content}\n\n`
+                text += `\`\`\`Jawaban :\`\`\`\n${x.answer[0].content}\n`
+                text += `==============================\n\n`
+            }
+            reply(text)
+            break
+        case 'jarak':
+            if (args.length == 0) return reply(`Example: ${prefix + command} jakarta - yogyakarta`)
+            var text1 = full_args.split('-')[0].trim()
+            var text2 = full_args.split('-')[1].trim()
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/jaraktempuh?apikey=${apikey}&kota1=${text1}&kota2=${text2}`)
+            var text = `Informasi Jarak dari ${text1} ke ${text2} :\n\n`
+            text += `\`\`\`◪ Asal :\`\`\` ${data.result.from.name}\n`
+            text += `\`\`\`◪ Garis Lintang :\`\`\` ${data.result.from.latitude}\n`
+            text += `\`\`\`◪ Garis Bujur :\`\`\` ${data.result.from.longitude}\n\n`
+            text += `\`\`\`◪ Tujuan :\`\`\` ${data.result.to.name}\n`
+            text += `\`\`\`◪ Garis Lintang :\`\`\` ${data.result.to.latitude}\n`
+            text += `\`\`\`◪ Garis Bujur :\`\`\` ${data.result.to.longitude}\n\n`
+            text += `\`\`\`◪ Jarak Tempuh :\`\`\` ${data.result.jarak}\n`
+            text += `\`\`\`◪ Waktu Tempuh :\`\`\`\n`
+            text += `   ╭───────────────❏\n`
+            text += `❍┤ Kereta Api : ${data.result.kereta_api}\n`
+            text += `❍┤ Pesawat : ${data.result.pesawat}\n`
+            text += `❍┤ Mobil : ${data.result.mobil}\n`
+            text += `❍┤ Motor : ${data.result.motor}\n`
+            text += `❍┤ Jalan Kaki : ${data.result.jalan_kaki}\n`
+            text += `   ╰───────────────❏\n`
+            reply(text)
+            break
+        case 'urbandictionary':
+            var { data } = await axios.get(`http://lolhuman.herokuapp.com/api/urdict?apikey=${apikey}&query=${full_args}`)
+            for (var x of data.result) {
+                var text = `\`\`\`Meaning :\n${x.definition}\`\`\`\n\n`
+                text += `\`\`\`Link : ${x.permalink}\`\`\`\n\n`
+                text += `\`\`\`Sounds Url : ${x.sound_urls[0]}\`\`\`\n\n`
+                text += `\`\`\`Like : ${x.thumbs_up}\`\`\`\n\n`
+                text += `\`\`\`Dislike : ${x.thumbs_down}\`\`\`\n\n`
+                text += `\`\`\`Created On : \n${x.written_on}\`\`\`\n\n`
+                text += `\`\`\`Author : ${x.author}\`\`\`\n\n`
+                text += `\`\`\`Word : ${x.word}\`\`\`\n\n`
+                text += `\`\`\`Defined Id : ${x.defid}\`\`\`\n\n`
+                text += `\`\`\`Example : ${x.example}\`\`\`\n\n`
+            }
+            reply(text)
+            break
+        case 'chord':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Melukis senja`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/chord?apikey=${apikey}&query=${full_args}`)
+            var text = `Title : ${data.result.title}\n`
+            text += `Chord : \n${data.result.chord}`
+            reply(text)
+            break
+        case 'heroml':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Fanny`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/heroml/${full_args}?apikey=${apikey}`)
+            var caption = `Name : ${data.result.hero_name}\n`
+            caption += `Entrance Quotes : ${data.result.ent_quotes}\n`
+            caption += `Role : ${data.result.detail.role}\n`
+            caption += `Specialty : ${data.result.detail.specialty}\n`
+            caption += `Laning : ${data.result.detail.laning_recommendation}\n`
+            caption += `Release : ${data.result.detail.release_date}\n`
+            caption += `Movement speed : ${data.result.attr.movement_speed}\n`
+            caption += `Physical attack : ${data.result.attr.physical_attack}\n`
+            caption += `Magic power : ${data.result.attr.magic_power}\n`
+            caption += `Physical defense : ${data.result.attr.physical_defense}\n`
+            caption += `Magic defense : ${data.result.attr.magic_defense}\n`
+            caption += `Critical rate : ${data.result.attr.basic_atk_crit_rate}\n`
+            caption += `Hp : ${data.result.attr.hp}\n`
+            caption += `Mana : ${data.result.attr.mana}\n`
+            caption += `Mana regen : ${data.result.attr.mana_regen}\n`
+            sock.sendMessage(from, { image: { url: data.result.icon }, caption })
+            break
+        case 'mlstalk':
+            if (args.length == 0) return reply(`Example: ${prefix + command} 84830127/2169`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/mobilelegend/${args[0]}?apikey=${apikey}`)
+            reply(data.result)
+            break
+        case 'genshin':
+            if (args.length == 0) return reply(`Example: ${prefix + command} jean`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/genshin/${full_args}?apikey=${apikey}`)
+            var caption = `Name : ${data.result.title}\n`
+            caption += `Intro : ${data.result.intro}\n`
+            caption += `Icon : ${data.result.icon}\n`
+            await sock.sendMessage(from, { image: { url: data.result.cover1 }, caption })
+            await sock.sendMessage(from, { audio: { url: data.result.cv[0].audio[0] }, mimetype: 'audio/mp4' })
+            break
+        case 'qrreader':
+            if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
+            var form = new FormData()
+            form.append('img', stream, { filename: 'tahu.jpg' })
+            var { data } = await axios.post(`https://api.lolhuman.xyz/api/read-qr?apikey=${apikey}`, form)
+            reply('Result: ' + data.result)
+            break
+        case 'wikipedia':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Tahu`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/wiki?apikey=${apikey}&query=${full_args}`)
+            reply(data.result)
+            break
+        case 'translate':
+            if (args.length == 0) return reply(`Example: ${prefix + command} en Tahu Bacem`)
+            var kode_negara = args[0]
+            args.shift()
+            var text = args.join(' ')
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/translate/auto/${kode_negara}?apikey=${apikey}&text=${text}`)
+            init_txt = `From : ${data.result.from}\n`
+            init_txt += `To : ${data.result.to}\n`
+            init_txt += `Original : ${data.result.original}\n`
+            init_txt += `Translated : ${data.result.translated}\n`
+            init_txt += `Pronunciation : ${data.result.pronunciation}\n`
+            reply(init_txt)
+            break
+        case 'brainly':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Soekarno adalah`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/brainly?apikey=${apikey}&query=${full_args}`)
+            var text = 'Result : \n'
+            for (var x of data.result) {
+                text += `${x.title}\n`
+                text += `${x.url}\n\n`
+            }
+            reply(text)
+            break
+        case 'jadwaltv':
+            if (args.length == 0) return reply(`Example: ${prefix + command} RCTI`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/jadwaltv/${args[0]}?apikey=${apikey}`)
+            var text = `Jadwal TV ${args[0].toUpperCase()}\n`
+            for (var x in data.result) {
+                text += `${x} - ${data.result[x]}\n`
+            }
+            reply(text)
+            break
+        case 'jadwaltvnow':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/jadwaltv/now?apikey=${apikey}`)
+            var text = `Jadwal TV Now :\n`
+            for (var x in data.result) {
+                text += `${x.toUpperCase()}${data.result[x]}\n\n`
+            }
+            reply(text)
+            break
+        case 'newsinfo':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/newsinfo?apikey=${apikey}`)
+            var text = 'Result :\n'
+            for (var x of data.result) {
+                text += `Title : ${x.title}\n`
+                text += `Author : ${x.author}\n`
+                text += `Source : ${x.source.name}\n`
+                text += `Url : ${x.url}\n`
+                text += `Published : ${x.publishedAt}\n`
+                text += `Description : ${x.description}\n\n`
+            }
+            reply(text)
+            break
+        case 'cnnindonesia':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/cnnindonesia?apikey=${apikey}`)
+            var text = 'Result :\n'
+            for (var x of data.result) {
+                text += `Judul : ${x.judul}\n`
+                text += `Link : ${x.link}\n`
+                text += `Tipe : ${x.tipe}\n`
+                text += `Published : ${x.waktu}\n\n`
+            }
+            reply(text)
+            break
+        case 'cnnnasional':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/cnnindonesia/nasional?apikey=${apikey}`)
+            var text = 'Result :\n'
+            for (var x of data.result) {
+                text += `Judul : ${x.judul}\n`
+                text += `Link : ${x.link}\n`
+                text += `Tipe : ${x.tipe}\n`
+                text += `Published : ${x.waktu}\n\n`
+            }
+            reply(text)
+            break
+        case 'cnninternasional':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/cnnindonesia/internasional?apikey=${apikey}`)
+            var text = 'Result :\n'
+            for (var x of data.result) {
+                text += `Judul : ${x.judul}\n`
+                text += `Link : ${x.link}\n`
+                text += `Tipe : ${x.tipe}\n`
+                text += `Published : ${x.waktu}\n\n`
+            }
+            reply(text)
+            break
+        case 'infogempa':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/infogempa?apikey=${apikey}`)
+            var caption = `Lokasi : ${data.result.lokasi}\n`
+            caption += `Waktu : ${data.result.waktu}\n`
+            caption += `Potensi : ${data.result.potensi}\n`
+            caption += `Magnitude : ${data.result.magnitude}\n`
+            caption += `Kedalaman : ${data.result.kedalaman}\n`
+            caption += `Koordinat : ${data.result.koordinat}`
+            sock.sendMessage(from, { image: { url: data.result.map }, caption })
+            break
+        case 'lirik':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Melukis Senja`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/lirik?apikey=${apikey}&query=${full_args}`)
+            reply(data.result)
+            break
+        case 'cuaca':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Yogyakarta`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/cuaca/${args[0]}?apikey=${apikey}`)
+            var text = `Tempat : ${data.result.tempat}\n`
+            text += `Cuaca : ${data.result.cuaca}\n`
+            text += `Angin : ${data.result.angin}\n`
+            text += `Description : ${data.result.description}\n`
+            text += `Kelembapan : ${data.result.kelembapan}\n`
+            text += `Suhu : ${data.result.suhu}\n`
+            text += `Udara : ${data.result.udara}\n`
+            text += `Permukaan laut : ${data.result.permukaan_laut}\n`
+            sock.sendMessage(from, { location: { degreesLatitude: data.result.latitude, degreesLongitude: data.result.longitude } })
+            reply(text)
+            break
+        case 'covidindo':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/corona/indonesia?apikey=${apikey}`)
+            var text = `Positif : ${data.result.positif}\n`
+            text += `Sembuh : ${data.result.sembuh}\n`
+            text += `Dirawat : ${data.result.dirawat}\n`
+            text += `Meninggal : ${data.result.meninggal}`
+            reply(text)
+            break
+        case 'covidglobal':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/corona/global?apikey=${apikey}`)
+            var text = `Positif : ${data.result.positif}\n`
+            text += `Sembuh : ${data.result.sembuh}\n`
+            text += `Dirawat : ${data.result.dirawat}\n`
+            text += `Meninggal : ${data.result.meninggal}`
+            reply(text)
+            break
+        case 'kodepos':
+            if (args.length == 0) return reply(`Example: ${prefix + command} Slemanan or ${prefix + command} 66154`)
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/kodepos?apikey=${apikey}&query=${full_args}`)
+            var text = `Provinsi : ${data.result[0].province}\n`
+            text += `Kabupaten : ${data.result[0].city}\n`
+            text += `Kecamatan : ${data.result[0].subdistrict}\n`
+            text += `Kelurahan : ${data.result[0].urban}\n`
+            text += `Kode Pos : ${data.result[0].postalcode}`
+            reply(text)
+            break
+        case 'jadwalbola':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/jadwalbola?apikey=${apikey}`)
+            var text = 'Jadwal Bola :\n'
+            for (var x of data.result) {
+                text += `Hari : ${x.hari}\n`
+                text += `Jam : ${x.jam}\n`
+                text += `Event : ${x.event}\n`
+                text += `Match : ${x.match}\n`
+                text += `TV : ${x.tv}\n\n`
+            }
+            reply(text)
+            break
+        case 'indbeasiswa':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/indbeasiswa?apikey=${apikey}`)
+            var text = 'Info Beasiswa :\n'
+            for (var x of data.result) {
+                text += `Title : ${x.title}\n`
+                text += `Link : ${x.link}\n\n`
+            }
+            reply(text)
+            break
+        case 'hoax':
+            var { data } = await axios.get(`https://api.lolhuman.xyz/api/turnbackhoax?apikey=${apikey}`)
+            var text = 'Info Hoax :\n'
+            for (var x of data.result) {
+                text += `Title : ${x.title}\n`
+                text += `Link : ${x.link}\n`
+                text += `Posted : ${x.posted}\n`
+                text += `Description : ${x.desc}\n\n`
+            }
+            reply(text)
+            break
+        case 'nsfwcheck':
+            if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
+            var form = new FormData()
+            form.append('img', stream, { filename: 'tahu.jpg' })
+            var { data } = await axios.post(`https://api.lolhuman.xyz/api/nsfwcheck?apikey=${apikey}`, form)
+            var is_nsfw = 'No'
+            if (Number(data.result.replace('%', '')) >= 50) {
+                is_nsfw = 'Yes'
+            }
+            reply(`Is NSFW? ${is_nsfw}\nNSFW Score : ${data.result}`)
+            break
+        case 'ocr':
+            if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
+            var form = new FormData()
+            form.append('img', stream, { filename: 'tahu.jpg' })
+            var { data } = await axios.post(`https://api.lolhuman.xyz/api/ocr?apikey=${apikey}`, form)
+            reply(`Result : ${data.result}`)
             break
 
         // Movie & Story
@@ -843,7 +1156,6 @@ module.exports = async (sock, msg) => {
         case 'stickerwm':
             if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
             var url = `https://api.lolhuman.xyz/api/filter/${command}?apikey=${apikey}`
-            var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', ''))
             var form = new FormData()
             form.append('img', stream, 'tahu.jpg')
 
@@ -875,6 +1187,7 @@ module.exports = async (sock, msg) => {
             break
         case 'sticker':
         case 's':
+            if (!(isImage && isQuotedImage && isVideo && isQuotedVideo)) return reply(`Kirim media dengan caption ${prefix + command} atau tag media yang sudah dikirim`)
             var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', ''))
             let stickerStream = new PassThrough()
             if (isImage || isQuotedImage) {
