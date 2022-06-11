@@ -89,11 +89,12 @@ module.exports = async (sock, msg) => {
     const isQuotedLocation = isQuoted && quotedType == 'locationMessage'
 
     var mediaType = type
+    var stream
     if (isQuotedImage || isQuotedVideo || isQuotedAudio || isQuotedSticker) {
         mediaType = quotedType
         msg.message[mediaType] = msg.message.extendedTextMessage.contextInfo.quotedMessage[mediaType]
+        stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', '')).catch(console.error)
     }
-    var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', '')).catch()
 
     if (!isGroup && !isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[ PRIVATE ]', 'aqua'), color(body.slice(0, 50), 'white'), 'from', color(senderNumber, 'yellow'))
     if (isGroup && !isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[  GROUP  ]', 'aqua'), color(body.slice(0, 50), 'white'), 'from', color(senderNumber, 'yellow'), 'in', color(groupName, 'yellow'))
