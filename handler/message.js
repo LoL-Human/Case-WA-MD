@@ -1188,7 +1188,7 @@ module.exports = async (sock, msg) => {
             break
         case 'sticker':
         case 's':
-            if (!(isImage && isQuotedImage && isVideo && isQuotedVideo)) return reply(`Kirim media dengan caption ${prefix + command} atau tag media yang sudah dikirim`)
+            if (!(isImage || isQuotedImage || isVideo || isQuotedVideo)) return reply(`Kirim media dengan caption ${prefix + command} atau tag media yang sudah dikirim`)
             var stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', ''))
             let stickerStream = new PassThrough()
             if (isImage || isQuotedImage) {
