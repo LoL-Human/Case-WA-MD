@@ -1,11 +1,10 @@
-const { default: WASocket, useSingleFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('@adiwajshing/baileys')
+const { default: WASocket, fetchLatestBaileysVersion, DisconnectReason, useMultiFileAuthState } = require('@adiwajshing/baileys')
 const Pino = require('pino')
 const { sessionName } = require('./config.json')
 const { Boom } = require('@hapi/boom')
 const store = require('./store')
 const { existsSync } = require('fs')
 const path = require('path')
-const { state, saveState } = useSingleFileAuthState(path.resolve(`${sessionName}-session.json`), Pino({ level: 'silent' }))
 const messageHandler = require('./handler/message')
 
 existsSync('./store/baileys_store.json') && store.readFromFile('./store/baileys_store.json')
@@ -14,6 +13,7 @@ setInterval(() => {
 }, 10000)
 
 const connect = async () => {
+    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(`${sessionName}-session`), Pino({ level: 'silent' }))
     let { version, isLatest } = await fetchLatestBaileysVersion()
 
     console.log(`Using: ${version}, newer: ${isLatest}`)
@@ -33,7 +33,7 @@ const connect = async () => {
         console.log('got contacts', Object.values(store.contacts).length)
     })
 
-    sock.ev.on('creds.update', saveState)
+    sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async (up) => {
         const { lastDisconnect, connection } = up
         if (connection) {
@@ -43,7 +43,7 @@ const connect = async () => {
         if (connection === 'close') {
             let reason = new Boom(lastDisconnect.error).output.statusCode
             if (reason === DisconnectReason.badSession) {
-                console.log(`Bad Session File, Please Delete ${sessionName}-session.json and Scan Again`)
+                console.log(`Bad Session File, Please Delete ${sessionName}-session and Scan Again`)
                 sock.logout()
             } else if (reason === DisconnectReason.connectionClosed) {
                 console.log('Connection closed, reconnecting....')
@@ -55,7 +55,7 @@ const connect = async () => {
                 console.log('Connection Replaced, Another New Session Opened, Please Close Current Session First')
                 sock.logout()
             } else if (reason === DisconnectReason.loggedOut) {
-                console.log(`Device Logged Out, Please Delete ${sessionName}-session.json and Scan Again.`)
+                console.log(`Device Logged Out, Please Delete ${sessionName}-session and Scan Again.`)
                 sock.logout()
             } else if (reason === DisconnectReason.restartRequired) {
                 console.log('Restart Required, Restarting...')
