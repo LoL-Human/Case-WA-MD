@@ -3,14 +3,23 @@ const Pino = require('pino')
 const { sessionName } = require('./config.json')
 const { Boom } = require('@hapi/boom')
 const store = require('./store')
-const { existsSync } = require('fs')
+const { existsSync, watchFile } = require('fs')
 const path = require('path')
-const messageHandler = require('./handler/message')
+let messageHandler = require('./handler/message')
 
 existsSync('./store/baileys_store.json') && store.readFromFile('./store/baileys_store.json')
 setInterval(() => {
     store.writeToFile('./store/baileys_store.json')
 }, 10000)
+
+watchFile('./handler/message.js', () => {
+    const dir = path.resolve('./handler/message.js')
+    if (dir in require.cache) {
+        delete require.cache[dir]
+        messageHandler = require('./handler/message')
+        console.log(`reloaded message.js`)
+    }
+})
 
 const connect = async () => {
     const { state, saveCreds } = await useMultiFileAuthState(path.resolve(`${sessionName}-session`), Pino({ level: 'silent' }))
