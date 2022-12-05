@@ -7,3 +7,5 @@ fitur.txt
 node_modules
 store/baileys_store.json
 config.json
+nodemon.*
+tests/
