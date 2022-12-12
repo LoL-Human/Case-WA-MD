@@ -58,6 +58,7 @@ module.exports = async (sock, msg) => {
 	const time = moment().tz('Asia/Jakarta').format('HH:mm:ss')
 	if (msg.key && msg.key.remoteJid === 'status@broadcast') return
 	if (msg.key && msg.key.fromMe) return
+	if (moment().unix() - msg.messageTimestamp > 5 * 60) return
 	if (!msg.message) return
 
 	const type = getContentType(msg.message)
