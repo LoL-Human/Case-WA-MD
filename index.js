@@ -83,5 +83,9 @@ const connect = async () => {
 		if (type !== 'notify') return
 		messageHandler(sock, messages[0])
 	})
+
+	process.on('uncaughtException', (err) => {
+		console.error(err?.message)
+	})
 }
 connect()
