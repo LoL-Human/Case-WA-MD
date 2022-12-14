@@ -49,32 +49,9 @@ const connect = async () => {
 			console.log('Connection Status: ', connection)
 		}
 
-		if (connection === 'close') {
-			let reason = new Boom(lastDisconnect.error).output.statusCode
-			if (reason === DisconnectReason.badSession) {
-				console.log(`Bad Session File, Please Delete ${sessionName}-session and Scan Again`)
-				sock.logout()
-			} else if (reason === DisconnectReason.connectionClosed) {
-				console.log('Connection closed, reconnecting....')
-				connect()
-			} else if (reason === DisconnectReason.connectionLost) {
-				console.log('Connection Lost from Server, reconnecting...')
-				connect()
-			} else if (reason === DisconnectReason.connectionReplaced) {
-				console.log('Connection Replaced, Another New Session Opened, Please Close Current Session First')
-				sock.logout()
-			} else if (reason === DisconnectReason.loggedOut) {
-				console.log(`Device Logged Out, Please Delete ${sessionName}-session and Scan Again.`)
-				sock.logout()
-			} else if (reason === DisconnectReason.restartRequired) {
-				console.log('Restart Required, Restarting...')
-				connect()
-			} else if (reason === DisconnectReason.timedOut) {
-				console.log('Connection TimedOut, Reconnecting...')
-				connect()
-			} else {
-				sock.end(`Unknown DisconnectReason: ${reason}|${lastDisconnect.error}`)
-			}
+		if (connection === 'close' && lastDisconnect?.error?.output?.statusCode != 401) {
+			console.log('Reconnecting...')
+			connect()
 		}
 	})
 
