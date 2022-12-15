@@ -120,7 +120,7 @@ module.exports = async (sock, msg) => {
 	var stream
 	if (isQuotedImage || isQuotedVideo || isQuotedAudio || isQuotedSticker) {
 		mediaType = quotedType
-		msg.message[mediaType] = msg.message.extendedTextMessage.contextInfo.quotedMessage[mediaType]
+		msg.message[mediaType] = msg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.[mediaType]
 		stream = await downloadContentFromMessage(msg.message[mediaType], mediaType.replace('Message', '')).catch(console.error)
 	}
 
