@@ -49,9 +49,11 @@ const connect = async () => {
 			console.log('Connection Status: ', connection)
 		}
 
-		if (connection === 'close' && lastDisconnect?.error?.output?.statusCode != 401) {
+		if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
 			console.log('Reconnecting...')
 			connect()
+		} else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode === 401) {
+			console.error('Session expired or replaced, please scan QR Code again...')
 		}
 	})
 

@@ -95,11 +95,11 @@ module.exports = async (sock, msg) => {
 	const isOwner = ownerNumber.includes(sender)
 
 	let command = isCmd ? body.slice(1).trim().split(' ').shift().toLowerCase() : ''
-	let responseId = msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId || msg.message?.buttonsResponseMessage?.selectedButtonId || null
+	let responseId = msg?.message?.listResponseMessage?.singleSelectReply?.selectedRowId || msg?.message?.buttonsResponseMessage?.selectedButtonId || null
 	let args = body.trim().split(' ').slice(1)
 	let full_args = body.replace(command, '').slice(1).trim()
 
-	let mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
+	let mentioned = msg?.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
 
 	const isImage = type == 'imageMessage'
 	const isVideo = type == 'videoMessage'
@@ -651,6 +651,18 @@ module.exports = async (sock, msg) => {
 				text += `==============================\n`
 				text += `\`\`\`Pertanyaan :\`\`\`\n${x.question.content}\n\n`
 				text += `\`\`\`Jawaban :\`\`\`\n${x.answer[0].content}\n`
+				text += `==============================\n\n`
+			}
+			reply(text)
+			break
+		case 'roboguru':
+			if (args.length == 0) return reply(`Example: ${prefix + command} siapakah sukarno`)
+			var { data } = await axios.get(`https://api.lolhuman.xyz/api/roboguru?apikey=${apikey}&query=${full_args}&grade=sma&subject=sejarah`).catch((err) => console.error(err?.response?.data))
+			var text = 'Beberapa Pembahasan Dari Roboguru :\n\n'
+			for (var x of data.result) {
+				text += `==============================\n`
+				text += `\`\`\`Pertanyaan :\`\`\`\n${x.question}\n\n`
+				text += `\`\`\`Jawaban :\`\`\`\n${x.answer}\n`
 				text += `==============================\n\n`
 			}
 			reply(text)
@@ -1543,7 +1555,7 @@ module.exports = async (sock, msg) => {
 		case 'silverplaybutton':
 		case 'freefire':
 			if (args.length == 0) return reply(`Example: ${prefix + command} LoL Human`)
-			sock.sendMessage(from, { image: { url: `https://api.lolhuman.xyz/api/ephoto1/${command}?apikey=${apikey}&text=${text}` } })
+			sock.sendMessage(from, { image: { url: `https://api.lolhuman.xyz/api/ephoto1/${command}?apikey=${apikey}&text=${full_args}` } })
 			break
 		default:
 			if (isCmd) {
