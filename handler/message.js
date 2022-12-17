@@ -217,7 +217,7 @@ module.exports = async (sock, msg) => {
 		case 'jadwalsholat':
 			if (args.length == 0) return reply(`Example: ${prefix + command} Yogyakarta`)
 			axios
-				.get(`https://api.lolhuman.xyz/api/sholat/${daerah}?apikey=${apikey}`)
+				.get(`https://api.lolhuman.xyz/api/sholat/${args[0]}?apikey=${apikey}`)
 				.then(({ data }) => {
 					var text = `Wilayah : ${data.result.wilayah}\n`
 					text += `Tanggal : ${data.result.tanggal}\n`
@@ -245,7 +245,7 @@ module.exports = async (sock, msg) => {
 						var caption = `❖ Title    : *${data.result.title}*\n`
 						caption += `❖ Size     : *${data.result.size}*`
 						sock.sendMessage(from, { image: { url: data.result.thumbnail }, caption }).then(() => {
-							sock.sendMessage(from, { audio: { url: data.result.link }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3`, ptt: true })
+							sock.sendMessage(from, { audio: { url: data.result.link }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3` })
 						})
 					})
 				})
@@ -276,7 +276,7 @@ module.exports = async (sock, msg) => {
 					var caption = `❖ Title    : *${data.result.title}*\n`
 					caption += `❖ Size     : *${data.result.size}*`
 					sock.sendMessage(from, { image: { url: data.result.thumbnail }, caption }).then(() => {
-						sock.sendMessage(from, { audio: { url: data.result.link }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3`, ptt: true })
+						sock.sendMessage(from, { audio: { url: data.result.link }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3` })
 					})
 				})
 				.catch(console.error)
@@ -289,7 +289,7 @@ module.exports = async (sock, msg) => {
 					var caption = `❖ Title    : *${data.result.title}*\n`
 					caption += `❖ Size     : *${data.result.size}*`
 					sock.sendMessage(from, { image: { url: data.result.thumbnail }, caption }).then(() => {
-						sock.sendMessage(from, { audio: { url: data.result.link }, mimetype: 'video/mp4', fileName: `${data.result.title}.mp4` })
+						sock.sendMessage(from, { video: { url: data.result.link }, mimetype: 'video/mp4', fileName: `${data.result.title}.mp4` })
 					})
 				})
 				.catch(console.error)
@@ -312,7 +312,7 @@ module.exports = async (sock, msg) => {
 			break
 		case 'tiktokmusic':
 			if (args.length == 0) return reply(`Example: ${prefix + command} https://vt.tiktok.com/ZSwWCk5o/`)
-			sock.sendMessage(from, { audio: { url: `https://api.lolhuman.xyz/api/tiktokmusic?apikey=${apikey}&url=${args[0]}` }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3`, ptt: true })
+			sock.sendMessage(from, { audio: { url: `https://api.lolhuman.xyz/api/tiktokmusic?apikey=${apikey}&url=${args[0]}` }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3` })
 			break
 		case 'spotify':
 			if (args.length == 0) return reply(`Example: ${prefix + command} https://open.spotify.com/track/0ZEYRVISCaqz5yamWZWzaA`)
@@ -351,14 +351,14 @@ module.exports = async (sock, msg) => {
 				caption += `Uploaded : ${data.result.info.date}\n`
 				caption += `Lirik :\n ${data.result.lirik}\n`
 				sock.sendMessage(from, { image: { url: data.result.image }, caption }).then(() => {
-					sock.sendMessage(from, { audio: { url: data.result.audio[0].link }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3`, ptt: true })
+					sock.sendMessage(from, { audio: { url: data.result.audio[0].link }, mimetype: 'audio/mp4', fileName: `${data.result.title}.mp3` })
 				})
 			})
 			break
 		case 'igdl':
 			if (args.length == 0) return reply(`Example: ${prefix + command} https://www.instagram.com/p/CJ8XKFmJ4al/?igshid=1acpcqo44kgkn`)
 			axios.get(`https://api.lolhuman.xyz/api/instagram?apikey=${apikey}&url=${args[0]}`).then(({ data }) => {
-				var url = data.result
+				var url = data.result[0]
 				if (url.includes('.mp4')) {
 					sock.sendMessage(from, { video: { url }, mimetype: 'video/mp4' })
 				} else {
@@ -422,7 +422,9 @@ module.exports = async (sock, msg) => {
 			break
 		case 'pixiv':
 			if (args.length == 0) return reply(`Example: ${prefix + command} loli kawaii`)
-			sock.sendMessage(from, { image: { url: `https://api.lolhuman.xyz/api/pixiv?apikey=${apikey}&query=${full_args}` } })
+			axios.get(`https://api.lolhuman.xyz/api/pixiv?apikey=${apikey}&query=${full_args}`).then(({ data }) => {
+				sock.sendMessage(from, { image: { url: data.result[0].image } })
+			})
 			break
 		case 'pixivdl':
 			if (args.length == 0) return reply(`Example: ${prefix + command} 63456028`)
@@ -625,6 +627,11 @@ module.exports = async (sock, msg) => {
 				reply(text)
 			})
 			break
+		case 'storynime':
+			axios.get(`https://api.lolhuman.xyz/api/${command}?apikey=${apikey}`).then(({ data }) => {
+				sock.sendMessage(from, { video: { url: data.result }, mimetype: 'video/mp4' })
+			})
+			break
 
 		// Information //
 		case 'kbbi':
@@ -771,16 +778,6 @@ module.exports = async (sock, msg) => {
 			init_txt += `Translated : ${data.result.translated}\n`
 			init_txt += `Pronunciation : ${data.result.pronunciation}\n`
 			reply(init_txt)
-			break
-		case 'brainly':
-			if (args.length == 0) return reply(`Example: ${prefix + command} Soekarno adalah`)
-			var { data } = await axios.get(`https://api.lolhuman.xyz/api/brainly?apikey=${apikey}&query=${full_args}`)
-			var text = 'Result : \n'
-			for (var x of data.result) {
-				text += `${x.title}\n`
-				text += `${x.url}\n\n`
-			}
-			reply(text)
 			break
 		case 'jadwaltv':
 			if (args.length == 0) return reply(`Example: ${prefix + command} RCTI`)
@@ -1352,9 +1349,15 @@ module.exports = async (sock, msg) => {
 
 		// Random Image //
 		case 'art':
+		case 'awoo':
 		case 'bts':
+		case 'cecan':
+		case 'cogan':
+		case 'elaina':
 		case 'exo':
 		case 'elf':
+		case 'estetic':
+		case 'kanna':
 		case 'loli':
 		case 'neko':
 		case 'waifu':
@@ -1433,6 +1436,13 @@ module.exports = async (sock, msg) => {
 		case 'kemonomimi':
 		case 'nsfw_avatar':
 			sock.sendMessage(from, { image: { url: `https://api.lolhuman.xyz/api/random2/${command}?apikey=${apikey}` } })
+			break
+
+		case 'ppcouple':
+			axios.get(`https://api.lolhuman.xyz/api/random/${command}?apikey=${apikey}`).then(({ data }) => {
+				sock.sendMessage(from, { image: { url: data.result.male }, caption: 'Male' })
+				sock.sendMessage(from, { image: { url: data.result.female }, caption: 'Female' })
+			})
 			break
 
 		// Textprome //

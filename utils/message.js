@@ -38,6 +38,7 @@ ${prefix}kusonime
 ${prefix}kusonimesearch
 ${prefix}otakudesu
 ${prefix}otakudesusearch
+${prefix}storynime
 ${prefix}1977
 ${prefix}aden
 ${prefix}brannan
@@ -66,11 +67,18 @@ ${prefix}willow
 ${prefix}xpro2
 ${prefix}pencil
 ${prefix}art
+${prefix}awoo
 ${prefix}bts
+${prefix}cecan
+${prefix}cogan
+${prefix}elaina
+${prefix}estetic
 ${prefix}exo
 ${prefix}elf
+${prefix}kanna
 ${prefix}loli
 ${prefix}neko
+${prefix}ppcouple
 ${prefix}waifu
 ${prefix}shota
 ${prefix}husbu
