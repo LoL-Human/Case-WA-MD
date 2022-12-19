@@ -155,16 +155,14 @@ module.exports = async (sock, msg) => {
 			break
 		case 'checkapikey':
 			if (!isOwner) return reply('Command hanya untuk owner bot.')
-			return api('lolhuman')
-				.get('/api/checkapikey')
-				.then(({ data }) => {
-					let text = `Username : ${data.result.username}\n`
-					text += `Request Total : ${data.result.requests}\n`
-					text += `Request Today : ${data.result.today}\n`
-					text += `Account Type : ${data.result.account_type}\n`
-					text += `Expired : ${data.result.expired}`
-					return reply(text)
-				})
+			return axios.get(`https://api.lolhuman.xyz/api/checkapikey?apikey=${apikey}`).then(({ data }) => {
+				let text = `Username : ${data.result.username}\n`
+				text += `Request Total : ${data.result.requests}\n`
+				text += `Request Today : ${data.result.today}\n`
+				text += `Account Type : ${data.result.account_type}\n`
+				text += `Expired : ${data.result.expired}`
+				return reply(text)
+			})
 
 		// Islami //
 		case 'listsurah':
