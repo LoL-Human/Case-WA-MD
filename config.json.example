@@ -3,5 +3,6 @@
     "ownerName": "LoL Human",
     "ownerNumber": ["62895418200111@s.whatsapp.net"],
     "sessionName": "lolhuman",
-    "apikey": ""
+    "apikey": "",
+    "limit": 10
 }
