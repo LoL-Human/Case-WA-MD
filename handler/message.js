@@ -82,6 +82,7 @@ module.exports = async (sock, msg) => {
 
 	if (!user) {
 		users[from] = { limit }
+		user = users[from]
 		writeDatabase('users', users)
 	}
 
@@ -1169,6 +1170,18 @@ module.exports = async (sock, msg) => {
 				text += `Umur : ${data.result.age}`
 				reply(text)
 			})
+			break
+
+		case 'imagetoanime':
+			if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
+			var form = new FormData()
+			form.append('img', stream, { filename: 'tahu.png' })
+			axios
+				.post(`https://api.lolhuman.xyz/api/imagetoanime?apikey=${apikey}`, form, { headers: { ...form.getHeaders() }, responseType: 'arraybuffer' })
+				.then(({ data }) => {
+					sock.sendMessage(from, { image: data })
+				})
+				.catch((err) => console.error(err.response?.data))
 			break
 
 		case '1977':

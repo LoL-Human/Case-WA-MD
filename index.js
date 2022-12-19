@@ -1,3 +1,4 @@
+require('./utils/cron')
 const { default: WASocket, fetchLatestBaileysVersion, DisconnectReason, useMultiFileAuthState } = require('@adiwajshing/baileys')
 const Pino = require('pino')
 const { sessionName } = require('./config.json')
