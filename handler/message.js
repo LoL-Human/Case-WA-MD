@@ -7,33 +7,8 @@ const FormData = require('form-data')
 const chalk = require('chalk')
 const fs = require('fs')
 const { apikey } = require('../config.json')
-
 const { help } = require('../utils/message')
-
-const apiBaseUrl = {
-	lolhuman: 'https://api.lolhuman.xyz',
-}
-
-const apiKey = {
-	lolhuman: {
-		key: 'apikey',
-		value: apikey,
-	},
-}
-
-/**
- *
- * @param { string } apiName
- * @returns { import('axios').AxiosInstance }
- */
-const api = (apiName) => {
-	return axios.create({
-		baseURL: apiBaseUrl[apiName],
-		params: {
-			[apiKey[apiName].key]: apiKey[apiName].value,
-		},
-	})
-}
+const { writeDatabase } = require('../utils')
 
 /**
  *
@@ -53,7 +28,8 @@ Array.prototype.random = function () {
  * @param {proto.IWebMessageInfo} msg
  */
 module.exports = async (sock, msg) => {
-	const { ownerNumber, ownerName, botName } = require('../config.json')
+	const { ownerNumber, ownerName, botName, limit } = require('../config.json')
+	const users = require('../database/users.json')
 
 	const time = moment().tz('Asia/Jakarta').format('HH:mm:ss')
 	if (msg.key && msg.key.remoteJid === 'status@broadcast') return
@@ -98,6 +74,25 @@ module.exports = async (sock, msg) => {
 	let responseId = msg?.message?.listResponseMessage?.singleSelectReply?.selectedRowId || msg?.message?.buttonsResponseMessage?.selectedButtonId || null
 	let args = body.trim().split(' ').slice(1)
 	let full_args = body.replace(command, '').slice(1).trim()
+
+	/**
+	 * @type { { limit: number } } }
+	 */
+	let user = users[from]
+
+	if (!user) {
+		users[from] = { limit }
+		writeDatabase('users', users)
+	}
+
+	if (!user.limit && isCmd) {
+		return reply('Limit sudah terpakai habis.')
+	}
+
+	if (user.limit && isCmd) {
+		users[from].limit--
+		writeDatabase('users', users)
+	}
 
 	let mentioned = msg?.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
 
