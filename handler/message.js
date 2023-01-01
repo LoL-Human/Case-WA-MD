@@ -638,6 +638,27 @@ module.exports = async (sock, msg) => {
 				sock.sendMessage(from, { video: { url: data.result }, mimetype: 'video/mp4' })
 			})
 			break
+		case 'cekresi':
+			axios.get(`https://api.lolhuman.xyz/api/checkresi?apikey=${apikey}&resi=${args[0]}`).then(({ data }) => {
+				let text = `Nomor Resi : ${data.result.resi}\n`
+				text += `Kurir : ${data.result.courier?.toUpperCase()}\n`
+				text += `Dari : ${data.result.origin.name}\n`
+				text += `Tujuan : ${data.result.destination.name}\n\n`
+				for (let x of data.result.history) {
+					text += `Deskripsi : ${x.note}\n`
+					text += `Waktu : ${x.time}\n\n`
+				}
+				return reply(text)
+			})
+			break
+		case 'agedetect':
+			if (!isImage && !isQuotedImage) return reply(`Kirim gambar dengan caption ${prefix + command} atau tag gambar yang sudah dikirim`)
+			var form = new FormData()
+			form.append('img', stream, 'tahu.jpg')
+			axios.post(`https://api.lolhuman.xyz/api/agedetect?apikey=${apikey}`, form).then(({ data }) => {
+				return reply(`Saya menebak umur Anda adalah ${data.result}`)
+			})
+			break
 
 		// Information //
 		case 'kbbi':
