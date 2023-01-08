@@ -24,6 +24,11 @@ Array.prototype.random = function () {
 }
 
 /**
+ * @type { Map<string, import('moment-timezone').Moment> }
+ */
+const cooldown = new Map()
+
+/**
  * @param {WASocket} sock
  * @param {proto.IWebMessageInfo} msg
  */
@@ -75,6 +80,10 @@ module.exports = async (sock, msg) => {
 	let args = body.trim().split(' ').slice(1)
 	let full_args = body.replace(command, '').slice(1).trim()
 
+	const reply = async (text) => {
+		return sock.sendMessage(from, { text: text.trim() }, { quoted: msg })
+	}
+
 	/**
 	 * @type { { limit: number } } }
 	 */
@@ -93,6 +102,15 @@ module.exports = async (sock, msg) => {
 	if (user.limit && isCmd) {
 		users[from].limit--
 		writeDatabase('users', users)
+	}
+
+	const cooldownBuilder = `${senderNumber}-${command}`
+	if (isCmd && cooldown.get(cooldownBuilder) && cooldown.get(cooldownBuilder) > moment()) {
+		const duration = moment.duration(cooldown.get(cooldownBuilder).diff(moment()))
+		return reply(`Command cooldown, Anda dapat menggunakannya lagi setelah ${Math.round(duration.asSeconds())}s`)
+	} else if (!cooldown.get(cooldownBuilder) || (cooldown.get(cooldownBuilder) && cooldown.get(cooldownBuilder) < moment())) {
+		cooldown.set(cooldownBuilder, moment().add(moment.duration(3000, 'milliseconds'))) // 3 seconds
+		setTimeout(() => cooldown.delete(cooldownBuilder), 3000)
 	}
 
 	let mentioned = msg?.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
@@ -124,10 +142,6 @@ module.exports = async (sock, msg) => {
 	if (isGroup && !isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[  GROUP  ]', 'aqua'), color(body.slice(0, 50), 'white'), 'from', color(senderNumber, 'yellow'), 'in', color(groupName, 'yellow'))
 	if (!isGroup && isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[ COMMAND ]', 'aqua'), color(body, 'white'), 'from', color(senderNumber, 'yellow'))
 	if (isGroup && isCmd) console.log(color(`[ ${time} ]`, 'white'), color('[ COMMAND ]', 'aqua'), color(body, 'white'), 'from', color(senderNumber, 'yellow'), 'in', color(groupName, 'yellow'))
-
-	const reply = async (text) => {
-		return sock.sendMessage(from, { text: text.trim() }, { quoted: msg })
-	}
 
 	switch (command) {
 		case 'owner':
