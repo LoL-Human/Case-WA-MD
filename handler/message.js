@@ -1329,6 +1329,14 @@ module.exports = async (sock, msg) => {
 					.save(`./temp/stickers/${sender}.webp`)
 			}
 			break
+		case 'stickerwa':
+			if (args.length == 0) return reply(`Example: ${prefix + command} loli kawaii`)
+			axios.get(`https://api.lolhuman.xyz/api/stickerwa?apikey=${apikey}&query=${full_args}`).then(({ data }) => {
+				let pack = data.result.random()
+				let sticker = pack.stickers.random()
+				sock.sendMessage(from, { sticker: { url: `https://api.lolhuman.xyz/api/convert/towebp?apikey=${apikey}&img=${sticker}` }, caption })
+			})
+			break
 
 		// Stalk
 		case 'stalkig':
