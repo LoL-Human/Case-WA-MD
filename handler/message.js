@@ -1391,6 +1391,12 @@ module.exports = async (sock, msg) => {
 				sock.sendMessage(from, { image: { url: data.result.user_picture }, caption })
 			})
 			break
+		case 'ai':
+			if (args.length == 0) return reply(`Example: ${prefix + command} ai adalah`)
+			axios.get(`https://api.lolhuman.xyz/api/openai?apikey=${apikey}&text=${encodeURIComponent(full_args)}&user=${senderNumber}`).then(({ data }) => {
+				reply(data.result)
+			})
+			break
 
 		// Other
 		case 'ssweb':
