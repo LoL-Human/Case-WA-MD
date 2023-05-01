@@ -1,5 +1,5 @@
 require('./utils/cron')
-const { default: WASocket, fetchLatestBaileysVersion, DisconnectReason, useMultiFileAuthState } = require('@adiwajshing/baileys')
+const { default: WASocket, fetchLatestBaileysVersion, DisconnectReason, useMultiFileAuthState, fetchLatestWaWebVersion } = require('@adiwajshing/baileys')
 const Pino = require('pino')
 const { sessionName } = require('./config.json')
 const { Boom } = require('@hapi/boom')
@@ -24,7 +24,7 @@ watchFile('./handler/message.js', () => {
 
 const connect = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState(path.resolve(`${sessionName}-session`), Pino({ level: 'silent' }))
-	let { version, isLatest } = await fetchLatestBaileysVersion()
+	let { version, isLatest } = await fetchLatestWaWebVersion().catch(() => fetchLatestBaileysVersion())
 
 	console.log(`Using: ${version}, newer: ${isLatest}`)
 	const sock = WASocket({
